@@ -38,7 +38,7 @@ def build_generate_parser():
     parser.add_argument('-f', '--output-format',  dest='format', nargs='*', choices=OUTPUT_FORMATS,
                         default=OUTPUT_FORMATS[0], help='the output file format of the address list (default: TXT)')
     parser.add_argument('-path', '--output-path', dest='outpath',  type=pathlib.Path, default=pathlib.Path(
-        "./"), help='the path where the lists should be written to (default: current working directory ("./")')
+        "./data"), help='the path where the lists should be written to (default: current working directory ("./data")')
     return parser
 
 
