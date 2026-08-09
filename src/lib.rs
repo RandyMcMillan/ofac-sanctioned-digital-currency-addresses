@@ -1,7 +1,6 @@
 use roxmltree::Document;
 use serde_json::to_writer_pretty;
 use std::collections::HashSet;
-use std::env;
 use std::error::Error;
 use std::fmt::{self, Display};
 use std::fs::{self, File};
@@ -179,10 +178,6 @@ impl Display for CliError {
 
 impl Error for CliError {}
 
-pub fn run_from_env() -> Result<(), Box<dyn Error>> {
-    run(parse_args(env::args_os().skip(1))?)
-}
-
 pub fn run(command: Command) -> Result<(), Box<dyn Error>> {
     match command {
         Command::Fetch(args) => fetch_sdn_archive(&args.url, &args.output),
@@ -320,14 +315,14 @@ where
 
 fn print_generate_help() {
     println!(
-        "Usage: generate-address-list.py [ASSET ...] [-sdn FILE] [-f TXT JSON] [-path DIR]\n\
+        "Usage: generate-address-list [ASSET ...] [-sdn FILE] [-f TXT JSON] [-path DIR]\n\
          \n\
          Generate sanctioned digital currency address lists from an OFAC XML file.\n\
          \n\
          Assets: {}\n\
          Formats: {}\n\
          \n\
-         Fetch the input XML first with: generate-address-list.py fetch -o sdn_advanced.xml",
+         Fetch the input XML first with: generate-address-list fetch -o sdn_advanced.xml",
         Asset::all()
             .iter()
             .map(Asset::as_str)
@@ -343,7 +338,7 @@ fn print_generate_help() {
 
 fn print_fetch_help() {
     println!(
-        "Usage: generate-address-list.py fetch [-o FILE] [--url URL]\n\
+        "Usage: generate-address-list fetch [-o FILE] [--url URL]\n\
          \n\
          Download the published OFAC SDN XML archive and extract the XML file."
     );
@@ -352,7 +347,7 @@ fn print_fetch_help() {
 pub fn generate_address_lists(args: &GenerateArgs) -> Result<(), Box<dyn Error>> {
     if !args.sdn.exists() {
         return Err(Box::new(CliError(format!(
-            "{} does not exist. Run `generate-address-list.py fetch` first or pass `-sdn /path/to/sdn_advanced.xml`.",
+            "{} does not exist. Run `generate-address-list fetch` first or pass `-sdn /path/to/sdn_advanced.xml`.",
             args.sdn.display()
         ))));
     }
@@ -539,6 +534,7 @@ fn feature_type_text(asset: Asset) -> String {
 #[cfg(test)]
 mod tests {
     use super::*;
+    use std::env;
     use std::fs;
     use std::path::PathBuf;
     use std::time::{SystemTime, UNIX_EPOCH};
