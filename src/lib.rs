@@ -540,7 +540,12 @@ fn feature_type_text(asset: Asset) -> String {
 mod tests {
     use super::*;
     use std::fs;
+    use std::io::Write as _;
+    use std::path::PathBuf;
     use std::time::{SystemTime, UNIX_EPOCH};
+    use zip::write::SimpleFileOptions;
+    use zip::CompressionMethod;
+    use zip::ZipWriter;
 
     #[test]
     fn parses_asset_ids_and_addresses() {
@@ -597,6 +602,126 @@ mod tests {
         assert_eq!(
             fs::read_to_string(base.join("sanctioned_addresses_XBT.json")).unwrap(),
             "[\n  \"addr1\",\n  \"addr2\"\n]\n"
+        );
+
+        fs::remove_dir_all(&base).unwrap();
+    }
+
+    #[test]
+    fn parses_fetch_and_generate_arguments() {
+        match parse_args([
+            "fetch".into(),
+            "-o".into(),
+            "custom.xml".into(),
+            "--url".into(),
+            "https://example.invalid/archive.zip".into(),
+        ])
+        .unwrap()
+        {
+            Command::Fetch(args) => {
+                assert_eq!(args.output, PathBuf::from("custom.xml"));
+                assert_eq!(args.url, "https://example.invalid/archive.zip");
+            }
+            other => panic!("unexpected command: {other:?}"),
+        }
+
+        match parse_args([
+            "ETH".into(),
+            "XBT".into(),
+            "-f".into(),
+            "JSON".into(),
+            "TXT".into(),
+            "-sdn".into(),
+            "input.xml".into(),
+            "-path".into(),
+            "out".into(),
+        ])
+        .unwrap()
+        {
+            Command::Generate(args) => {
+                assert_eq!(args.assets, vec![Asset::Eth, Asset::Xbt]);
+                assert_eq!(args.sdn, PathBuf::from("input.xml"));
+                assert_eq!(args.output_formats, vec![OutputFormat::Json, OutputFormat::Txt]);
+                assert_eq!(args.outpath, PathBuf::from("out"));
+            }
+            other => panic!("unexpected command: {other:?}"),
+        }
+    }
+
+    #[test]
+    fn extracts_first_xml_from_zip_archive() {
+        let mut buffer = Cursor::new(Vec::new());
+        {
+            let mut writer = ZipWriter::new(&mut buffer);
+            let options = SimpleFileOptions::default()
+                .compression_method(CompressionMethod::Stored);
+            writer.start_file("notes.txt", options).unwrap();
+            writer.write_all(b"ignore me").unwrap();
+            writer.start_file("sdn_advanced.xml", options).unwrap();
+            writer.write_all(b"<root>ok</root>").unwrap();
+            writer.finish().unwrap();
+        }
+
+        let xml = extract_first_xml(buffer.get_ref()).unwrap();
+        assert_eq!(xml, b"<root>ok</root>");
+    }
+
+    #[test]
+    fn generates_outputs_for_multiple_assets() {
+        let stamp = SystemTime::now()
+            .duration_since(UNIX_EPOCH)
+            .unwrap()
+            .as_nanos();
+        let base = env::temp_dir().join(format!("ofac-generate-{stamp}"));
+        fs::create_dir_all(&base).unwrap();
+
+        let sdn = base.join("sdn_advanced.xml");
+        fs::write(
+            &sdn,
+            r#"
+                <Root xmlns="https://sanctionslistservice.ofac.treas.gov/api/PublicationPreview/exports/ADVANCED_XML"
+                      xmlns:sdn="https://sanctionslistservice.ofac.treas.gov/api/PublicationPreview/exports/ADVANCED_XML">
+                  <sdn:ReferenceValueSets>
+                    <sdn:FeatureTypeValues>
+                      <sdn:FeatureType ID="11">Digital Currency Address - XBT</sdn:FeatureType>
+                      <sdn:FeatureType ID="22">Digital Currency Address - ETH</sdn:FeatureType>
+                    </sdn:FeatureTypeValues>
+                  </sdn:ReferenceValueSets>
+                  <sdn:DistinctParties>
+                    <sdn:Party FeatureTypeID="11">
+                      <sdn:VersionDetail>btc-2</sdn:VersionDetail>
+                      <sdn:VersionDetail>btc-1</sdn:VersionDetail>
+                      <sdn:VersionDetail>btc-1</sdn:VersionDetail>
+                    </sdn:Party>
+                    <sdn:Party FeatureTypeID="22">
+                      <sdn:VersionDetail>eth-1</sdn:VersionDetail>
+                    </sdn:Party>
+                  </sdn:DistinctParties>
+                </Root>
+            "#,
+        )
+        .unwrap();
+
+        let out = base.join("out");
+        let args = GenerateArgs {
+            assets: vec![Asset::Xbt, Asset::Eth],
+            sdn: sdn.clone(),
+            output_formats: vec![OutputFormat::Txt, OutputFormat::Json],
+            outpath: out.clone(),
+        };
+        generate_address_lists(&args).unwrap();
+
+        assert_eq!(
+            fs::read_to_string(out.join("sanctioned_addresses_XBT.txt")).unwrap(),
+            "btc-1\nbtc-2\n"
+        );
+        assert_eq!(
+            fs::read_to_string(out.join("sanctioned_addresses_ETH.txt")).unwrap(),
+            "eth-1\n"
+        );
+        assert_eq!(
+            fs::read_to_string(out.join("sanctioned_addresses_XBT.json")).unwrap(),
+            "[\n  \"btc-1\",\n  \"btc-2\"\n]\n"
         );
 
         fs::remove_dir_all(&base).unwrap();
