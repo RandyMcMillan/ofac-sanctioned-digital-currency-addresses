@@ -540,12 +540,11 @@ fn feature_type_text(asset: Asset) -> String {
 mod tests {
     use super::*;
     use std::fs;
-    use std::io::Write as _;
     use std::path::PathBuf;
     use std::time::{SystemTime, UNIX_EPOCH};
-    use zip::write::SimpleFileOptions;
     use zip::CompressionMethod;
     use zip::ZipWriter;
+    use zip::write::SimpleFileOptions;
 
     #[test]
     fn parses_asset_ids_and_addresses() {
@@ -641,7 +640,10 @@ mod tests {
             Command::Generate(args) => {
                 assert_eq!(args.assets, vec![Asset::Eth, Asset::Xbt]);
                 assert_eq!(args.sdn, PathBuf::from("input.xml"));
-                assert_eq!(args.output_formats, vec![OutputFormat::Json, OutputFormat::Txt]);
+                assert_eq!(
+                    args.output_formats,
+                    vec![OutputFormat::Json, OutputFormat::Txt]
+                );
                 assert_eq!(args.outpath, PathBuf::from("out"));
             }
             other => panic!("unexpected command: {other:?}"),
@@ -653,8 +655,8 @@ mod tests {
         let mut buffer = Cursor::new(Vec::new());
         {
             let mut writer = ZipWriter::new(&mut buffer);
-            let options = SimpleFileOptions::default()
-                .compression_method(CompressionMethod::Stored);
+            let options =
+                SimpleFileOptions::default().compression_method(CompressionMethod::Stored);
             writer.start_file("notes.txt", options).unwrap();
             writer.write_all(b"ignore me").unwrap();
             writer.start_file("sdn_advanced.xml", options).unwrap();
