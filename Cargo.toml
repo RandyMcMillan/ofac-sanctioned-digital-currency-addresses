@@ -1,0 +1,6 @@
+[package]
+name = "ofac-sanctioned-digital-currency-addresses"
+version = "0.1.0"
+edition = "2024"
+
+[dependencies]
