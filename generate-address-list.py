@@ -109,7 +109,11 @@ def fetch_sdn_archive(url, output_path):
             if not isinstance(getattr(err, "reason", None), ssl.SSLCertVerificationError):
                 raise
             print("TLS verification failed; retrying without certificate validation.", file=sys.stderr)
-            response = urllib.request.urlopen(url, context=ssl._create_unverified_context())
+            try:
+                response = urllib.request.urlopen(url, context=ssl._create_unverified_context())
+            except urllib.error.URLError:
+                print(f"FAIL: could not download {url}", file=sys.stderr)
+                raise
 
         with response, open(archive_path, 'wb') as archive_file:
             shutil.copyfileobj(response, archive_file)
@@ -120,6 +124,7 @@ def fetch_sdn_archive(url, output_path):
                 raise LookupError("No XML file found in the downloaded archive")
             with archive.open(xml_members[0]) as source, open(output_path, 'wb') as destination:
                 shutil.copyfileobj(source, destination)
+        print(f"OK: wrote {output_path}", file=sys.stderr)
 
 
 def parse_arguments():
