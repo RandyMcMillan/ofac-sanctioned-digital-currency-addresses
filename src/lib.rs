@@ -207,7 +207,7 @@ where
     let mut assets = Vec::new();
     let mut output_formats = Vec::new();
     let mut sdn = PathBuf::from(DEFAULT_SDN_FILENAME);
-    let mut outpath = PathBuf::from(".");
+    let mut outpath = PathBuf::from("./data");
 
     let mut args = args.into_iter().peekable();
     while let Some(arg) = args.next() {
