@@ -490,9 +490,9 @@ fn download_archive(url: &str) -> Result<Vec<u8>, Box<dyn Error>> {
     }
 }
 
-fn download_archive_with_client(url: &str, insecure: bool) -> Result<Vec<u8>, Box<dyn Error>> {
+fn download_archive_with_client(url: &str, _insecure: bool) -> Result<Vec<u8>, Box<dyn Error>> {
     let client = reqwest::blocking::Client::builder()
-        .danger_accept_invalid_certs(insecure)
+        //.danger_accept_invalid_certs(_insecure)
         .build()?;
 
     let mut response = client.get(url).send()?.error_for_status()?;
