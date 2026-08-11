@@ -478,7 +478,7 @@ fn download_archive(url: &str) -> Result<Vec<u8>, Box<dyn Error>> {
         Ok(bytes) => Ok(bytes),
         Err(err) if is_tls_verification_error(err.as_ref()) => {
             eprintln!("TLS verification failed; retrying without certificate validation.");
-            match download_archive_with_client(url, true) {
+            match download_archive_with_client(url, false) {
                 Ok(bytes) => Ok(bytes),
                 Err(err) => {
                     eprintln!("FAIL: could not download {url}");
