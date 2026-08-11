@@ -1,6 +1,6 @@
 [package]
 name = "ofac-sanctioned-digital-currency-addresses"
-version = "0.0.1"
+version = "0.0.2"
 edition = "2024"
 description = "Generate sanctioned digital currency address lists from OFAC SDN XML"
 license = "MIT"
@@ -11,3 +11,8 @@ reqwest = { version = "0.12", default-features = false, features = ["blocking", 
 roxmltree = "0.20"
 serde_json = "1"
 zip = "2"
+
+# The profile that 'dist' will build with
+[profile.dist]
+inherits = "release"
+lto = "thin"
