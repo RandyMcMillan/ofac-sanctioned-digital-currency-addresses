@@ -13,6 +13,7 @@ pub const DEFAULT_SDN_URL: &str =
 pub const DEFAULT_SDN_FILENAME: &str = "sdn_advanced.xml";
 
 const FEATURE_TYPE_PREFIX: &str = "Digital Currency Address - ";
+const BIN_NAME: &str = "ofac-sanctioned-digital-currency-addresses";
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
 pub enum Asset {
@@ -315,14 +316,14 @@ where
 
 fn print_generate_help() {
     println!(
-        "Usage: generate-address-list [ASSET ...] [-sdn FILE] [-f TXT JSON] [-path DIR]\n\
+        "Usage: {BIN_NAME} [ASSET ...] [-sdn FILE] [-f TXT JSON] [-path DIR]\n\
          \n\
          Generate sanctioned digital currency address lists from an OFAC XML file.\n\
          \n\
          Assets: {}\n\
          Formats: {}\n\
          \n\
-         Fetch the input XML first with: generate-address-list fetch -o sdn_advanced.xml",
+         Fetch the input XML first with: {BIN_NAME} fetch -o sdn_advanced.xml",
         Asset::all()
             .iter()
             .map(Asset::as_str)
@@ -338,7 +339,7 @@ fn print_generate_help() {
 
 fn print_fetch_help() {
     println!(
-        "Usage: generate-address-list fetch [-o FILE] [--url URL]\n\
+        "Usage: {BIN_NAME} fetch [-o FILE] [--url URL]\n\
          \n\
          Download the published OFAC SDN XML archive and extract the XML file."
     );
@@ -347,7 +348,7 @@ fn print_fetch_help() {
 pub fn generate_address_lists(args: &GenerateArgs) -> Result<(), Box<dyn Error>> {
     if !args.sdn.exists() {
         return Err(Box::new(CliError(format!(
-            "{} does not exist. Run `generate-address-list fetch` first or pass `-sdn /path/to/sdn_advanced.xml`.",
+            "{} does not exist. Run `{BIN_NAME} fetch` first or pass `-sdn /path/to/sdn_advanced.xml`.",
             args.sdn.display()
         ))));
     }

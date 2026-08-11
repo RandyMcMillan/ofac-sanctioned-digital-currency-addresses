@@ -1,6 +1,6 @@
 [package]
 name = "ofac-sanctioned-digital-currency-addresses"
-version = "0.0.5"
+version = "0.1.0"
 edition = "2024"
 description = "Generate sanctioned digital currency address lists from OFAC SDN XML"
 license = "MIT"
