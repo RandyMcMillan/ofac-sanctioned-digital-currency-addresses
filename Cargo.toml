@@ -1,7 +1,10 @@
 [package]
 name = "ofac-sanctioned-digital-currency-addresses"
-version = "0.1.0"
+version = "0.0.1"
 edition = "2024"
+description = "Generate sanctioned digital currency address lists from OFAC SDN XML"
+license = "MIT"
+repository = "https://github.com/RandyMcMillan/ofac-sanctioned-digital-currency-addresses"
 
 [dependencies]
 reqwest = { version = "0.12", default-features = false, features = ["blocking", "rustls-tls"] }
