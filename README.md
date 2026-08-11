@@ -45,6 +45,21 @@ generated each night at 0 UTC by a GitHub Actions workflow.
 
 ## Usage Examples
 
+### Rust CLI
+
+``` console
+$ cargo build
+$ cargo build --release
+$ cargo run -- fetch -o sdn_advanced.xml
+$ cargo run -- XBT ETH -sdn sdn_advanced.xml -f TXT JSON -path ./out
+$ cargo doc --open
+```
+
+`cargo run` uses the Rust implementation in `src/lib.rs` and `src/main.rs`.
+The Python script remains available for compatibility and reference.
+
+---
+
 The SDN list as XML file (~80 MB in May 2023) can be downloaded, for example,
 via `wget`:
 
